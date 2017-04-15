@@ -13,7 +13,7 @@ canvas.height = height;
 
 document.getElementById("canvas_goes_here").appendChild(canvas);
 
-const world = planck.World({ gravity: planck.Vec2(0,-10)});
+const world = planck.World({ gravity: planck.Vec2(0,10)});
 
 const renderer = new THREE.WebGLRenderer({
     canvas: canvas
@@ -50,7 +50,7 @@ ground.createFixture(planck.Edge(planck.Vec2(-300,0), planck.Vec2(300,0)), {
     friction: 0.6
 });
 
-const thing = world.createDynamicBody(planck.Vec2(20.0, -50.0));
+const thing = world.createDynamicBody(planck.Vec2(0.0, -250.0));
 thing.createFixture(planck.Polygon([ planck.Vec2(20.0,20.0), planck.Vec2(-20.0, 20.0),
         planck.Vec2(-20.0, -20.0), planck.Vec2(20.0, -20.0) ]));
 
@@ -58,14 +58,21 @@ console.log(thing);
 
 /// end testing stuff
 
+let paused = true;
 const startTime = new Date().getTime();
+let lastTime = startTime;
 function render() {
     /// DO TICK
+    const new_time = new Date().getTime();
+    if(!paused)
+        world.step(new_time-lastTime);
+
     if(thing && mesh) {
         const cpos = thing.getPosition();
         mesh.position.set(cpos.x, cpos.y, 0);
     }
 
+    lastTime = new_time;
     //grid.tick(new Date().getTime() - startTime);
     //overlay.tick(new Date().getTime() - startTime);
     requestAnimationFrame( render );
@@ -78,3 +85,12 @@ function render() {
 render();
 
 console.log('it worked');
+
+document.step = () => { world.step(1); }
+
+document.addEventListener('keydown', (e) => {
+    if(e.keyCode == 83)
+        document.step();
+    else if(e.keyCode == 80)
+        paused = !paused;
+});
